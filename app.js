@@ -11,7 +11,7 @@
   /* ---------------- state ---------------- */
   var DEF = {
     settings: {
-      capital: 500, hours: 3, maxSkill: 5, maxRisk: 5, expanded: false, view: 'sources',
+      capital: 500, hours: 3, maxSkill: 5, maxRisk: 5, expanded: true, view: 'sources',
       pick: { capital: 500, cat: 'all', sort: 'blue', safe: true }
     },
     filters: { cats: [], sort: 'match', kw: '' },
@@ -21,9 +21,15 @@
   function load() {
     try {
       var raw = JSON.parse(localStorage.getItem(LS) || '{}');
+      var s = Object.assign({}, DEF.settings, raw.settings || {},
+        { pick: Object.assign({}, DEF.settings.pick, (raw.settings || {}).pick || {}) });
+      // 迁移：v2 起侧栏默认展开；老 localStorage 里 expanded=false 强制更新一次
+      if (!s.ver || s.ver < 2) {
+        s.expanded = true;
+        s.ver = 2;
+      }
       return {
-        settings: Object.assign({}, DEF.settings, raw.settings || {},
-          { pick: Object.assign({}, DEF.settings.pick, (raw.settings || {}).pick || {}) }),
+        settings: s,
         filters: Object.assign({}, DEF.filters, raw.filters || {}),
         tracked: raw.tracked || {}, plans: raw.plans || [], custom: raw.custom || [],
         scout: raw.scout || {}, leads: raw.leads || []
