@@ -133,6 +133,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 .match{font-size:11px;color:var(--ok);font-weight:600;background:var(--ok-soft);padding:2px 8px;border-radius:5px}
 
 /* ---------- drawer ---------- */
+.drawer[hidden], .drawer-mask[hidden], .toast[hidden] { display: none !important; }
 .drawer-mask{position:fixed;inset:0;background:rgba(16,24,40,.4);z-index:40}
 .drawer{
   position:fixed;top:0;right:0;bottom:0;width:min(520px,100vw);background:#fff;z-index:50;
