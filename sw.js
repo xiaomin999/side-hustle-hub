@@ -1,5 +1,5 @@
 /* 副业收集工作台 Service Worker - 离线缓存 */
-var CACHE = 'shh-v3';
+var CACHE = 'shh-v4';
 var ASSETS = [
   './', './index.html', './style.css?v=3', './app.js?v=3', './data.js?v=3',
   './manifest.json', './icons/icon-192.png', './icons/icon-512.png'

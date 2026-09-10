@@ -233,6 +233,79 @@ td b{font-weight:700}
 .src-line.tip b{background:var(--primary-soft);color:var(--primary)}
 .src-line.tip{color:#3730A3}
 
+/* ---------- 侦察记录本 ---------- */
+.lead-form{display:grid;grid-template-columns:2.4fr 1fr 1fr 1.5fr .9fr auto;gap:9px;margin-bottom:15px}
+.lead-form input,.lead-form select{border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-size:13px;background:#fff;color:var(--text);font-family:inherit;min-width:0}
+.lead-form input:focus,.lead-form select:focus{outline:none;border-color:var(--primary)}
+.lead-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(108px,1fr));gap:10px;margin-bottom:14px}
+.stat i{display:block;font-style:normal;font-size:11px;color:var(--text-3);margin-top:3px;line-height:1.5}
+.lead-list{display:flex;flex-direction:column;gap:8px}
+.lead-item{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:10px;padding:10px 13px;background:#FCFCFD}
+.lead-main{flex:1;min-width:0}
+.lead-title{font-size:13.5px;font-weight:600;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.lead-price{font-size:12px;font-weight:700;color:var(--primary);background:var(--primary-soft);padding:1px 8px;border-radius:5px}
+.lead-meta{font-size:11.5px;color:var(--text-3);margin-top:3px}
+.lead-v{font-size:11px;font-weight:600;padding:3px 9px;border-radius:6px;flex:0 0 auto}
+.lead-v.ok{background:var(--ok-soft);color:#065F46}
+.lead-v.warn{background:var(--warn-soft);color:#92400E}
+.lead-v.mute{background:var(--line-soft);color:var(--text-3)}
+.lead-del{border:none;background:transparent;color:var(--text-3);font-size:18px;cursor:pointer;line-height:1;padding:0 4px;flex:0 0 auto}
+.lead-del:hover{color:var(--danger)}
+
+/* ---------- 选品决策 ---------- */
+.switch-row{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-2);margin:14px 0 10px;cursor:pointer}
+.switch-row input{width:16px;height:16px;accent-color:var(--primary);flex:0 0 16px}
+.tier-hint{background:var(--primary-soft);border-radius:10px;padding:10px 14px;font-size:12.5px;color:#3730A3;line-height:1.75}
+.tier-hint b{color:var(--primary)}
+.pick-list{display:flex;flex-direction:column;gap:14px}
+.pick-item{border:1px solid var(--line);border-radius:13px;padding:15px 17px;background:#fff;transition:.15s}
+.pick-item:hover{border-color:#C7D2FE;box-shadow:0 4px 14px rgba(79,70,229,.08)}
+.pick-head{display:flex;align-items:center;gap:11px;flex-wrap:wrap;margin-bottom:11px}
+.pick-head h3{font-size:15px;font-weight:700;margin:0}
+.pick-blue{font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:6px}
+.pick-blue.ok{background:var(--ok-soft);color:#065F46}
+.pick-blue.warn{background:var(--warn-soft);color:#92400E}
+.pick-blue.mute{background:var(--line-soft);color:var(--text-2)}
+.pick-nums{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:9px}
+.pick-nums span{font-size:11.5px;color:var(--text-3);background:var(--line-soft);padding:4px 10px;border-radius:6px}
+.pick-nums b{color:var(--text);font-size:12.5px;margin-left:3px}
+.pick-bars{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text-3);margin-bottom:10px}
+.pick-bars .gap{width:14px}
+.dots{display:inline-flex;gap:3px;margin-left:3px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--line);display:inline-block}
+.dot.on{background:var(--primary)}
+.pick-kw{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:12px;color:var(--text-3);background:#FCFCFD;border-radius:9px;padding:9px 12px;margin-bottom:10px}
+.pick-kw b{flex:0 0 auto;font-size:11px;font-weight:700;color:var(--text-3);background:var(--line-soft);padding:2px 8px;border-radius:5px}
+.pick-kw code{font-family:ui-monospace,Consolas,monospace;font-size:12px;color:var(--text);background:#fff;border:1px solid var(--line);padding:3px 9px;border-radius:6px;flex:1;min-width:160px}
+.pick-line{display:flex;gap:9px;font-size:12.5px;line-height:1.75;color:var(--text-2);margin-bottom:7px}
+.pick-line:last-child{margin-bottom:0}
+.pick-line b{flex:0 0 auto;font-size:11px;font-weight:700;color:var(--text-3);background:var(--line-soft);padding:2px 8px;border-radius:5px;height:fit-content;margin-top:2px}
+.pick-line.why b{background:var(--ok-soft);color:#065F46}
+.pick-line.risk b{background:var(--danger-soft);color:#991B1B}
+.pick-line.risk{color:#7F1D1D}
+.btn.xs{font-size:11.5px;padding:3px 10px}
+
+/* ---------- 报价助手 ---------- */
+.pr-main{font-size:14px;color:var(--text-2);margin:14px 0 12px}
+.pr-main b{font-size:24px;font-weight:800;color:var(--primary);margin:0 4px}
+.pr-unit{font-size:13px;color:var(--text-3)}
+.pr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:10px}
+.pr-note{font-size:12.5px;color:var(--text-3);line-height:1.7}
+.rate-list{display:flex;flex-direction:column;gap:9px}
+.rate-item{border:1px solid var(--line);border-radius:10px;padding:11px 14px;background:#FCFCFD}
+.rate-head{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:4px}
+.rate-head b{font-size:13.5px}
+.rate-hot{font-size:10.5px;font-weight:700;background:var(--danger-soft);color:#991B1B;padding:2px 7px;border-radius:5px}
+.rate-price{margin-left:auto;font-size:12.5px;font-weight:700;color:var(--primary)}
+.rate-desc{font-size:12px;color:var(--text-3);line-height:1.6}
+.tpl-box{width:100%;border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:12.5px;line-height:1.85;color:var(--text-2);font-family:inherit;background:#FCFCFD;resize:vertical;box-sizing:border-box}
+.tpl-box:focus{outline:none;border-color:var(--primary)}
+.tip-list{display:flex;flex-direction:column;gap:9px}
+.tip-item{display:flex;gap:10px;font-size:12.5px;line-height:1.7;border-bottom:1px solid var(--line-soft);padding-bottom:9px}
+.tip-item:last-child{border-bottom:none;padding-bottom:0}
+.tip-item b{flex:0 0 128px;font-size:12.5px;color:var(--text)}
+.tip-item span{color:var(--text-2)}
+
 /* ---------- toast ---------- */
 .toast{
   position:fixed;bottom:26px;left:50%;transform:translateX(-50%);background:#1A1D26;color:#fff;
@@ -244,6 +317,9 @@ td b{font-weight:700}
   .form-grid{grid-template-columns:1fr}
   .filter-row{flex-wrap:wrap;gap:16px}
   .f-group{min-width:calc(50% - 8px)}
+  .lead-form{grid-template-columns:1fr 1fr}
+  .tip-item{flex-direction:column;gap:3px}
+  .tip-item b{flex:none}
 }
 @media (max-width:640px){
   .sidebar{

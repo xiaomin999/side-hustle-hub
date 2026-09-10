@@ -10,19 +10,23 @@
 
   /* ---------------- state ---------------- */
   var DEF = {
-    settings: { capital: 500, hours: 3, maxSkill: 5, maxRisk: 5, expanded: false, view: 'sources' },
+    settings: {
+      capital: 500, hours: 3, maxSkill: 5, maxRisk: 5, expanded: false, view: 'sources',
+      pick: { capital: 500, cat: 'all', sort: 'blue', safe: true }
+    },
     filters: { cats: [], sort: 'match', kw: '' },
-    tracked: {}, plans: [], custom: [], scout: {}
+    tracked: {}, plans: [], custom: [], scout: {}, leads: []
   };
   var state = load();
   function load() {
     try {
       var raw = JSON.parse(localStorage.getItem(LS) || '{}');
       return {
-        settings: Object.assign({}, DEF.settings, raw.settings || {}),
+        settings: Object.assign({}, DEF.settings, raw.settings || {},
+          { pick: Object.assign({}, DEF.settings.pick, (raw.settings || {}).pick || {}) }),
         filters: Object.assign({}, DEF.filters, raw.filters || {}),
         tracked: raw.tracked || {}, plans: raw.plans || [], custom: raw.custom || [],
-        scout: raw.scout || {}
+        scout: raw.scout || {}, leads: raw.leads || []
       };
     } catch (e) { return JSON.parse(JSON.stringify(DEF)); }
   }
@@ -491,6 +495,8 @@
   /* ---------------- 导航 ---------------- */
   var TITLES = {
     sources: ['源头导航', '别从「副业列表」里挑，从「谁在为这件事付钱」倒推'],
+    pick: ['选品决策', '输入你能投入的资金，看这个钱能撬动哪些品'],
+    pricing: ['报价助手', '行情、报价计算、文案模板与避坑清单'],
     library: ['副业点子库', ''], ai: ['AI 挖掘扩充', '用你的条件组合出新方向，也可以让 AI 生成后导入'],
     calc: ['收益测算', '把模糊的副业变成可比较的数字'], mine: ['我的副业', '跟踪状态、笔记与真实收支'],
     data: ['数据与备份', '']
@@ -504,6 +510,8 @@
     $('#viewSub').textContent = v === 'library' ? (allHustles().length + ' 个真实可执行的副业方向，按你的资金与时间筛选') : t[1];
     if (v === 'library') renderLibrary();
     if (v === 'sources') renderSources();
+    if (v === 'pick') renderPick();
+    if (v === 'pricing') renderPricing();
     if (v === 'mine') renderMine();
     if (v === 'calc') calc();
     if (v === 'data') renderStats();
@@ -620,6 +628,66 @@
       var c = e.target.closest('[data-srcg]'); if (!c) return;
       srcGroup = c.dataset.srcg; renderSrc();
     });
+    // 侦察记录本
+    var ldAdd = $('#ldAdd');
+    if (ldAdd) ldAdd.addEventListener('click', function () {
+      var t = $('#ldTitle').value.trim();
+      if (!t) { toast('先写一句需求描述'); return; }
+      state.leads.push({
+        title: t, price: +$('#ldPrice').value || 0,
+        exp: $('#ldExp').value.trim(), src: $('#ldSrc').value.trim() || '未标注',
+        verdict: $('#ldVerdict').value, date: new Date().toISOString().slice(0, 10)
+      });
+      save();
+      $('#ldTitle').value = ''; $('#ldPrice').value = ''; $('#ldExp').value = '';
+      renderLeads(); toast('已记录');
+    });
+    var ll = $('#leadList');
+    if (ll) ll.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-dellead]'); if (!b) return;
+      state.leads.splice(parseInt(b.dataset.dellead, 10), 1); save(); renderLeads();
+    });
+    var lc = $('#ldClear');
+    if (lc) lc.addEventListener('click', function () {
+      if (!confirm('清空全部侦察记录？')) return;
+      state.leads = []; save(); renderLeads();
+    });
+    // 选品决策
+    var pkc = $('#pkCapital');
+    if (pkc) {
+      var onCap = function () { state.settings.pick.capital = +pkc.value || 0; save(); renderPick(); };
+      pkc.addEventListener('input', onCap);
+      pkc.addEventListener('change', onCap);
+    }
+    var pkcat = $('#pkCat');
+    if (pkcat) pkcat.addEventListener('change', function () {
+      state.settings.pick.cat = pkcat.value; save(); renderPick();
+    });
+    var pksort = $('#pkSort');
+    if (pksort) pksort.addEventListener('change', function () {
+      state.settings.pick.sort = pksort.value; save(); renderPick();
+    });
+    var pksafe = $('#pkSafe');
+    if (pksafe) pksafe.addEventListener('change', function () {
+      state.settings.pick.safe = pksafe.checked; save(); renderPick();
+    });
+    var pklist = $('#pkList');
+    if (pklist) pklist.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-copykw]'); if (!b) return;
+      copyText(b.dataset.copykw, '找货词已复制，去 1688 粘贴搜索');
+    });
+    // 报价助手
+    ['prSvc', 'prWork', 'prLevel'].forEach(function (id) {
+      var el = $('#' + id); if (el) el.addEventListener('change', calcPrice);
+    });
+    var prTabs = $('#prTplTabs');
+    if (prTabs) prTabs.addEventListener('click', function (e) {
+      var c = e.target.closest('[data-tpl]'); if (!c) return;
+      tplIdx = parseInt(c.dataset.tpl, 10); renderTplTabs();
+    });
+    var prCopy = $('#prTplCopy');
+    if (prCopy) prCopy.addEventListener('click', function () { copyText($('#prTplBody').value, '文案已复制'); });
+
     // 数据
     $('#expBtn').addEventListener('click', function () {
       var blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
@@ -664,7 +732,7 @@
     { k: 'case', label: '③ 案例验证' }
   ];
   var srcGroup = 'all';
-  function renderSources() { renderScout(); renderSrc(); }
+  function renderSources() { renderScout(); renderSrc(); renderLeads(); }
 
   function renderScout() {
     var wrap = $('#scoutList'); if (!wrap) return;
@@ -701,6 +769,194 @@
         '<div class="src-line tip"><b>怎么用</b><span>' + esc(s.tip) + '</span></div>' +
         '</div>';
     }).join('');
+  }
+
+  /* ---------------- 侦察记录本 ---------------- */
+  var VERDICT = { can: ['我能做', 'ok'], learn: ['学一下能做', 'warn'], skip: ['放弃', 'mute'] };
+  function renderLeads() {
+    var stEl = $('#leadStats'), lsEl = $('#leadList'); if (!stEl || !lsEl) return;
+    var leads = state.leads || [];
+    var ps = leads.filter(function (l) { return +l.price > 0; }).map(function (l) { return +l.price; });
+    var avg = ps.length ? Math.round(ps.reduce(function (a, b) { return a + b; }, 0) / ps.length) : 0;
+    var lo = ps.length ? Math.min.apply(null, ps) : 0;
+    var hi = ps.length ? Math.max.apply(null, ps) : 0;
+    var can = leads.filter(function (l) { return l.verdict === 'can'; }).length;
+    var learn = leads.filter(function (l) { return l.verdict === 'learn'; }).length;
+
+    stEl.innerHTML =
+      '<div class="stat"><span>已记录</span><b>' + leads.length + ' 条</b></div>' +
+      '<div class="stat"><span>市场均价</span><b>' + (avg ? '¥' + fmt(avg) : '—') + '</b></div>' +
+      '<div class="stat"><span>价格带</span><b>' + (ps.length ? '¥' + fmt(lo) + '–' + fmt(hi) : '—') + '</b></div>' +
+      '<div class="stat"><span>我能做</span><b>' + can + ' 条</b></div>' +
+      '<div class="stat"><span>学一下能做</span><b>' + learn + ' 条</b></div>';
+
+    lsEl.innerHTML = leads.length ? leads.map(function (l, i) {
+      var v = VERDICT[l.verdict] || VERDICT.can;
+      return '<div class="lead-item">' +
+        '<div class="lead-main"><div class="lead-title">' + esc(l.title) +
+        (l.price ? '<span class="lead-price">¥' + fmt(l.price) + '</span>' : '') + '</div>' +
+        '<div class="lead-meta">' + [l.src, l.exp, l.date].filter(Boolean).map(esc).join(' · ') + '</div></div>' +
+        '<span class="lead-v ' + v[1] + '">' + v[0] + '</span>' +
+        '<button class="lead-del" data-dellead="' + i + '" title="删除">×</button></div>';
+    }).reverse().join('') : '<div class="hint">还没记录。上面 18 个源头随便挑一个点进去，看到真实需求就记一条。</div>';
+  }
+
+  /* ---------------- 选品决策器 ---------------- */
+  var TIERS = [
+    { t: 1, label: '0 – 500 元', name: '一件代发 / 零库存' },
+    { t: 2, label: '500 – 2000 元', name: '小批量测款' },
+    { t: 3, label: '2000 – 5000 元', name: '备货 + 微创新' },
+    { t: 4, label: '5000 元以上', name: '规模化 / 跨境' }
+  ];
+  function tierOf(cap) { return cap <= 500 ? 1 : cap <= 2000 ? 2 : cap < 5000 ? 3 : 4; }
+  function blueScore(p) {
+    return Math.max(0, Math.min(100, Math.round(((6 - p.comp) * 10 + p.repeat * 6 + p.margin * 15) / 90 * 100)));
+  }
+  function dots(n) {
+    var s = '';
+    for (var i = 1; i <= 5; i++) s += '<i class="dot' + (i <= n ? ' on' : '') + '"></i>';
+    return '<span class="dots">' + s + '</span>';
+  }
+  function renderPick() {
+    var s = state.settings.pick;
+    var capEl = $('#pkCapital'); if (!capEl) return;
+    if (document.activeElement !== capEl) capEl.value = s.capital;
+    $('#pkSafe').checked = !!s.safe;
+    $('#pkSort').value = s.sort;
+    var catEl = $('#pkCat');
+    if (catEl && !catEl.options.length) {
+      var cats = [];
+      (window.PICKS || []).forEach(function (p) {
+        if (p.cat && p.cat !== '本职敏感' && cats.indexOf(p.cat) < 0) cats.push(p.cat);
+      });
+      catEl.innerHTML = '<option value="all">全部</option>' + cats.map(function (c) {
+        return '<option value="' + esc(c) + '">' + esc(c) + '</option>';
+      }).join('');
+    }
+    if (catEl) catEl.value = s.cat;
+
+    var tier = tierOf(s.capital), ti = TIERS[tier - 1];
+    var hint = $('#pkTierHint');
+    if (hint) hint.innerHTML = '当前资金 <b>¥' + fmt(s.capital) + '</b> → 落在 <b>' + ti.label + '</b> 档（' + ti.name +
+      '）。下面列出这个档位及以下你能做的方向' + (s.safe ? '，已过滤与在职品类冲突的 4 个方向' : '') + '。';
+
+    var list = (window.PICKS || []).filter(function (p) {
+      if (s.safe && p.sensitive) return false;
+      if (s.cat !== 'all' && p.cat !== s.cat) return false;
+      return p.tier <= tier;
+    });
+    var by = {
+      blue: function (a, b) { return blueScore(b) - blueScore(a); },
+      margin: function (a, b) { return b.margin - a.margin; },
+      comp: function (a, b) { return a.comp - b.comp; },
+      repeat: function (a, b) { return b.repeat - a.repeat; },
+      profit: function (a, b) { return (b.price[1] - b.cost[1]) - (a.price[1] - a.cost[1]); }
+    };
+    list.sort(by[s.sort] || by.blue);
+
+    var listEl = $('#pkList'), emp = $('#pkEmpty');
+    if (listEl) listEl.innerHTML = list.map(function (p) {
+      var b = blueScore(p);
+      var bc = b >= 70 ? 'ok' : b >= 55 ? 'warn' : 'mute';
+      var profit = Math.round(p.price[1] - p.cost[1]);
+      return '<div class="pick-item">' +
+        '<div class="pick-head"><h3>' + esc(p.name) + '</h3>' +
+        '<span class="pick-blue ' + bc + '">蓝海度 ' + b + '</span></div>' +
+        '<div class="pick-nums">' +
+        '<span>拿货 <b>¥' + p.cost[0] + '–' + p.cost[1] + '</b></span>' +
+        '<span>建议售 <b>¥' + p.price[0] + '–' + p.price[1] + '</b></span>' +
+        '<span>毛利率 <b>' + Math.round(p.margin * 100) + '%</b></span>' +
+        '<span>单件利润 <b>¥' + profit + '</b></span>' +
+        '</div>' +
+        '<div class="pick-bars">竞争 ' + dots(p.comp) + '<span class="gap"></span>复购 ' + dots(p.repeat) + '</div>' +
+        '<div class="pick-kw"><b>1688 找货词</b><code>' + esc(p.kw) + '</code>' +
+        '<button class="btn ghost xs" data-copykw="' + esc(p.kw) + '">复制</button></div>' +
+        '<div class="pick-line why"><b>为什么值得做</b>' + esc(p.why) + '</div>' +
+        '<div class="pick-line risk"><b>坑在哪</b>' + esc(p.risk) + '</div>' +
+        '<div class="pick-line"><b>物流</b>' + esc(p.ship) + '</div>' +
+        '</div>';
+    }).join('');
+    if (emp) emp.hidden = list.length > 0;
+  }
+
+  /* ---------------- 报价与接单助手 ---------------- */
+  var WORK_HOURS = [4, 16, 40];
+  var tplIdx = 0;
+  function renderPricing() {
+    var svcSel = $('#prSvc'); if (!svcSel) return;
+    if (!svcSel.options.length) {
+      svcSel.innerHTML = (window.SERVICE_RATES || []).map(function (r) {
+        return '<option value="' + esc(r.k) + '">' + esc(r.name) + '</option>';
+      }).join('');
+      $('#prWork').innerHTML = (window.PRICE_FACTORS.work || []).map(function (w, i) {
+        return '<option value="' + i + '">' + esc(w.label) + '</option>';
+      }).join('');
+      $('#prLevel').innerHTML = (window.PRICE_FACTORS.level || []).map(function (w, i) {
+        return '<option value="' + i + '">' + esc(w.label) + '</option>';
+      }).join('');
+      $('#prLevel').selectedIndex = 1;
+      renderRates(); renderTplTabs(); renderTips();
+    }
+    calcPrice();
+  }
+  function renderRates() {
+    var el = $('#prRates'); if (!el) return;
+    el.innerHTML = (window.SERVICE_RATES || []).map(function (r) {
+      return '<div class="rate-item">' +
+        '<div class="rate-head"><b>' + esc(r.name) + '</b>' + (r.hot ? '<span class="rate-hot">热门</span>' : '') +
+        '<span class="rate-price">¥' + fmt(r.low) + ' – ' + fmt(r.high) + ' / ' + esc(r.unit) + '</span></div>' +
+        '<div class="rate-desc">' + esc(r.desc) + ' · 通常要求 ' + esc(r.exp) + '</div></div>';
+    }).join('');
+  }
+  function renderTplTabs() {
+    var tabs = $('#prTplTabs'); if (!tabs) return;
+    tabs.innerHTML = (window.OUTREACH || []).map(function (t, i) {
+      return '<button class="chip' + (tplIdx === i ? ' on' : '') + '" data-tpl="' + i + '">' + esc(t.ch) + '</button>';
+    }).join('');
+    renderTpl();
+  }
+  function renderTpl() {
+    var t = (window.OUTREACH || [])[tplIdx]; if (!t) return;
+    $('#prTplBody').value = t.body;
+    $('#prTplHint').textContent = t.title;
+  }
+  function renderTips() {
+    var el = $('#prTips'); if (!el) return;
+    el.innerHTML = (window.PRICING_TIPS || []).map(function (p) {
+      return '<div class="tip-item"><b>' + esc(p.t) + '</b><span>' + esc(p.d) + '</span></div>';
+    }).join('');
+  }
+  function calcPrice() {
+    var el = $('#prResult'); if (!el) return;
+    var r = (window.SERVICE_RATES || []).filter(function (x) { return x.k === $('#prSvc').value; })[0];
+    if (!r) return;
+    var wi = parseInt($('#prWork').value, 10) || 0, li = parseInt($('#prLevel').value, 10) || 0;
+    var wk = (window.PRICE_FACTORS.work || [])[wi] || { k: 1 };
+    var lv = (window.PRICE_FACTORS.level || [])[li] || { k: 1 };
+    var k = wk.k * lv.k;
+    var lo = Math.round(r.low * k / 10) * 10, hi = Math.round(r.high * k / 10) * 10;
+    var first = Math.round(lo * 0.7 / 10) * 10;
+    var h = WORK_HOURS[wi] || 16;
+    el.innerHTML =
+      '<div class="pr-main">建议报价 <b>¥' + fmt(lo) + ' – ¥' + fmt(hi) + '</b><span class="pr-unit"> / ' + esc(r.unit) + '</span></div>' +
+      '<div class="pr-grid">' +
+      '<div class="stat"><span>前 5 单特价</span><b>¥' + fmt(first) + '</b><i>用来换好评与案例</i></div>' +
+      '<div class="stat"><span>折合时薪</span><b>¥' + Math.round(lo / h) + ' – ' + Math.round(hi / h) + '</b><i>按约 ' + h + ' 小时工作量</i></div>' +
+      '<div class="stat"><span>底气下限</span><b>¥' + fmt(r.low) + '</b><i>低于此价建议不接</i></div>' +
+      '</div><div class="pr-note">' + esc(r.desc) + '</div>';
+  }
+  function copyText(txt, okMsg) {
+    var done = function () { toast(okMsg || '已复制'); };
+    var fb = function () {
+      var ta = document.createElement('textarea');
+      ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); done(); } catch (e) { toast('复制失败，请手动选中'); }
+      document.body.removeChild(ta);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).then(done, fb);
+    } else fb();
   }
 
   var toastTimer;
