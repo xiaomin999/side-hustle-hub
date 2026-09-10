@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-title" content="副业工作台" data-page-node-id="RZJZrXo5MOUIhe3Fn0CLn4">
 <link rel="apple-touch-icon" href="icons/icon-192.png" data-page-node-id="p2vI4WhQbJ58y1GEQ5M5Gr">
 <link rel="icon" href="icons/icon-192.png" data-page-node-id="3ZoFBTkHyuIPX4QEjCXqg3">
-<link rel="stylesheet" href="style.css?v=2" data-page-node-id="tPPxcpX1YAQAwV76Waqrsh">
+<link rel="stylesheet" href="style.css?v=3" data-page-node-id="tPPxcpX1YAQAwV76Waqrsh">
 </head>
 <body data-page-node-id="sqR8nU2ty0FyKz9GoeiwBk">
 <div class="app" data-page-node-id="FUJPvSb7GTMnsxlF9q8Ok9">
@@ -23,6 +23,9 @@
       <li data-view="library" class="active" data-page-node-id="JapnkIkp4gOWV0PYZlK9sD">
         <svg viewBox="0 0 24 24" data-page-node-id="igK9uxvEipcLi61jsVAzEc"><path d="M4 5h7v6H4V5Zm9 0h7v6h-7V5ZM4 13h7v6H4v-6Zm9 0h7v6h-7v-6Z" data-page-node-id="XlEr5a8ZfD2LXs2gL0vEyw"/></svg>
         <span data-page-node-id="J56KbQ5jS9mQXwe2FaLF71">点子库</span></li>
+      <li data-view="sources">
+        <svg viewBox="0 0 24 24"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z"/><path d="M15.5 8.5L13 13l-4.5 2.5L11 11l4.5-2.5Z"/></svg>
+        <span>源头导航</span></li>
       <li data-view="ai" data-page-node-id="0qTW1xSaExbmEgDKjgACBO">
         <svg viewBox="0 0 24 24" data-page-node-id="MKqNQ3E6bEEaE9GyEcF5Md"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z" data-page-node-id="YNiA7xQ6tslF3B6mmtg16y"/><path d="M18 16l.9 2.1L21 19l-2.1.9L18 22l-.9-2.1L15 19l2.1-.9L18 16Z" data-page-node-id="alfWAIe1wIcTuHUnIdBGOX"/></svg>
         <span data-page-node-id="iYEe42Cr5wtUSFHQgh2LkX">AI 挖掘</span></li>
@@ -103,6 +106,25 @@
       <div class="result-bar" data-page-node-id="6T8sbkaDTcJx0Teazt7lKf"><span id="resultCount" data-page-node-id="fvZ6m18DcZslA4iYUUM2f6">—</span><span class="hint" id="filterHint" data-page-node-id="rZlID9Tl2DAF8m2CeZLo5j"></span></div>
       <div class="grid" id="cardGrid" data-page-node-id="85WwnSAcMZ0Dnsom1NWXSJ"></div>
       <div class="empty" id="libEmpty" hidden data-page-node-id="XVvUsyvCBNs1Q9jd4La4bp">没有符合条件的副业，试着放宽资金或时间限制。</div>
+    </section>
+
+    <!-- ========== 源头导航 ========== -->
+    <section class="view" id="view-sources">
+      <div class="card">
+        <h2>本周侦察清单</h2>
+        <p class="muted">按顺序做完这 7 件事（约 9 小时，可分几天），你会从「不知道做什么」变成「知道市场要什么」。勾选会自动保存。</p>
+        <div id="scoutList" class="scout-list"></div>
+        <div class="row" style="margin-top:14px">
+          <span class="hint" id="scoutProgress"></span>
+          <button class="btn ghost sm" id="scoutReset">重置进度</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>源头导航</h2>
+        <p class="muted">这些是能看到「真实交易信号」的地方。每个源头都写了进去看什么、什么信号说明值得做。点击标题直接打开。</p>
+        <div class="src-tabs" id="srcTabs"></div>
+        <div id="srcList" class="src-list"></div>
+      </div>
     </section>
 
     <!-- ========== AI 挖掘 ========== -->
@@ -245,7 +267,7 @@
 
 <div class="toast" id="toast" hidden data-page-node-id="RDyB6IGlp5pU78s9H4jKRt"></div>
 
-<script src="data.js?v=1"></script>
-<script src="app.js?v=1"></script>
+<script src="data.js?v=3"></script>
+<script src="app.js?v=3"></script>
 </body>
 </html>

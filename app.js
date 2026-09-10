@@ -10,9 +10,9 @@
 
   /* ---------------- state ---------------- */
   var DEF = {
-    settings: { capital: 1000, hours: 3, maxSkill: 5, maxRisk: 5, expanded: false, view: 'library' },
+    settings: { capital: 500, hours: 3, maxSkill: 5, maxRisk: 5, expanded: false, view: 'sources' },
     filters: { cats: [], sort: 'match', kw: '' },
-    tracked: {}, plans: [], custom: []
+    tracked: {}, plans: [], custom: [], scout: {}
   };
   var state = load();
   function load() {
@@ -21,7 +21,8 @@
       return {
         settings: Object.assign({}, DEF.settings, raw.settings || {}),
         filters: Object.assign({}, DEF.filters, raw.filters || {}),
-        tracked: raw.tracked || {}, plans: raw.plans || [], custom: raw.custom || []
+        tracked: raw.tracked || {}, plans: raw.plans || [], custom: raw.custom || [],
+        scout: raw.scout || {}
       };
     } catch (e) { return JSON.parse(JSON.stringify(DEF)); }
   }
@@ -489,6 +490,7 @@
 
   /* ---------------- 导航 ---------------- */
   var TITLES = {
+    sources: ['源头导航', '别从「副业列表」里挑，从「谁在为这件事付钱」倒推'],
     library: ['副业点子库', ''], ai: ['AI 挖掘扩充', '用你的条件组合出新方向，也可以让 AI 生成后导入'],
     calc: ['收益测算', '把模糊的副业变成可比较的数字'], mine: ['我的副业', '跟踪状态、笔记与真实收支'],
     data: ['数据与备份', '']
@@ -501,6 +503,7 @@
     $('#viewTitle').textContent = t[0];
     $('#viewSub').textContent = v === 'library' ? (allHustles().length + ' 个真实可执行的副业方向，按你的资金与时间筛选') : t[1];
     if (v === 'library') renderLibrary();
+    if (v === 'sources') renderSources();
     if (v === 'mine') renderMine();
     if (v === 'calc') calc();
     if (v === 'data') renderStats();
@@ -601,6 +604,22 @@
       var c = e.target.closest('[data-status]'); if (!c) return;
       mineFilter = c.dataset.status; renderMine();
     });
+    // 源头导航
+    var sl = $('#scoutList');
+    if (sl) sl.addEventListener('change', function (e) {
+      var cb = e.target.closest('[data-scout]'); if (!cb) return;
+      state.scout[cb.dataset.scout] = cb.checked; save(); renderScout();
+    });
+    var sr = $('#scoutReset');
+    if (sr) sr.addEventListener('click', function () {
+      if (!confirm('重置本周侦察清单的勾选进度？')) return;
+      state.scout = {}; save(); renderScout();
+    });
+    var st = $('#srcTabs');
+    if (st) st.addEventListener('click', function (e) {
+      var c = e.target.closest('[data-srcg]'); if (!c) return;
+      srcGroup = c.dataset.srcg; renderSrc();
+    });
     // 数据
     $('#expBtn').addEventListener('click', function () {
       var blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
@@ -637,6 +656,53 @@
     } catch (e) { $('#dataMsg').textContent = '恢复失败：' + e.message; }
   }
 
+  /* ---------------- 源头导航 ---------------- */
+  var SRC_GROUPS = [
+    { k: 'all', label: '全部' },
+    { k: 'demand', label: '① 需求信号' },
+    { k: 'data', label: '② 数据验证' },
+    { k: 'case', label: '③ 案例验证' }
+  ];
+  var srcGroup = 'all';
+  function renderSources() { renderScout(); renderSrc(); }
+
+  function renderScout() {
+    var wrap = $('#scoutList'); if (!wrap) return;
+    var tasks = window.SCOUT_TASKS || [];
+    wrap.innerHTML = tasks.map(function (t) {
+      var done = !!state.scout[t.id];
+      return '<label class="scout-item' + (done ? ' done' : '') + '">' +
+        '<input type="checkbox" data-scout="' + esc(t.id) + '"' + (done ? ' checked' : '') + ' hidden>' +
+        '<span class="scout-chk">' + (done ? '✓' : '') + '</span>' +
+        '<div class="sc-body">' +
+        '<div class="sc-title">' + esc(t.title) + '</div>' +
+        '<div class="sc-detail">' + esc(t.detail) + '</div>' +
+        '</div><span class="sc-time">' + esc(t.time) + '</span></label>';
+    }).join('');
+    var n = tasks.filter(function (t) { return state.scout[t.id]; }).length;
+    var el = $('#scoutProgress');
+    if (el) el.textContent = '已完成 ' + n + ' / ' + tasks.length + ' 项' + (n === tasks.length ? '，侦察阶段完成，可以去接第一单了' : '');
+  }
+
+  function renderSrc() {
+    var tabs = $('#srcTabs'); if (!tabs) return;
+    tabs.innerHTML = SRC_GROUPS.map(function (g) {
+      var n = g.k === 'all' ? (window.SOURCES || []).length : (window.SOURCES || []).filter(function (s) { return s.group === g.k; }).length;
+      return '<button class="chip' + (srcGroup === g.k ? ' on' : '') + '" data-srcg="' + g.k + '">' + esc(g.label) + ' <b>' + n + '</b></button>';
+    }).join('');
+    var listEl = $('#srcList'); if (!listEl) return;
+    var list = (window.SOURCES || []).filter(function (s) { return srcGroup === 'all' || s.group === srcGroup; });
+    listEl.innerHTML = list.map(function (s) {
+      return '<div class="src-item">' +
+        '<div class="src-head"><a href="' + esc(s.url) + '" target="_blank" rel="noopener">' + esc(s.name) + '</a>' +
+        '<span class="src-cost' + (s.cost === 'paid' ? ' paid' : '') + '">' + (s.cost === 'paid' ? '付费' : '免费') + '</span></div>' +
+        '<div class="src-line"><b>进去看什么</b><span>' + esc(s.what) + '</span></div>' +
+        '<div class="src-line"><b>值得做的信号</b><span>' + esc(s.signal) + '</span></div>' +
+        '<div class="src-line tip"><b>怎么用</b><span>' + esc(s.tip) + '</span></div>' +
+        '</div>';
+    }).join('');
+  }
+
   var toastTimer;
   function toast(msg) {
     var el = $('#toast');
@@ -670,6 +736,7 @@
   /* ---------------- init ---------------- */
   function init() {
     renderCatChips(); renderAiChips(); initFilterUI(); renderLibrary(); renderCompare(); renderStats();
+    if ($('#view-sources')) renderSources();
     bind();
     switchView(state.settings.view || 'library');
     $('#costWrap').style.display = $('#cType').value === 'goods' ? '' : 'none';
