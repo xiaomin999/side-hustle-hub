@@ -836,15 +836,15 @@
     if (catEl) catEl.value = s.cat;
 
     var tier = tierOf(s.capital), ti = TIERS[tier - 1];
-    var hint = $('#pkTierHint');
-    if (hint) hint.innerHTML = '当前资金 <b>¥' + fmt(s.capital) + '</b> → 落在 <b>' + ti.label + '</b> 档（' + ti.name +
-      '）。下面列出这个档位及以下你能做的方向' + (s.safe ? '，已过滤与在职品类冲突的 4 个方向' : '') + '。';
-
     var list = (window.PICKS || []).filter(function (p) {
       if (s.safe && p.sensitive) return false;
       if (s.cat !== 'all' && p.cat !== s.cat) return false;
       return p.tier <= tier;
     });
+    var hint = $('#pkTierHint');
+    if (hint) hint.innerHTML = '当前资金 <b>¥' + fmt(s.capital) + '</b> → 落在 <b>' + ti.label + '</b> 档（' + ti.name +
+      '）。共匹配 <b>' + list.length + '</b> 个方向' + (s.safe ? '，已过滤与在职品类冲突的 4 个方向' : '') + '。';
+
     var by = {
       blue: function (a, b) { return blueScore(b) - blueScore(a); },
       margin: function (a, b) { return b.margin - a.margin; },
